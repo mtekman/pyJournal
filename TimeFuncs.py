@@ -25,16 +25,50 @@ class TimeFns:
 		time_r[0] = int(yyyy)
 		time_r[1] = int(mm)
 		time_r[2] = int(dd)
+		return TimeFns.nextDate[0:3]
+
+
+	@staticmethod
+	def makeDate(yyyy,mm,dd):
+
+		today = localtime()
+
+		def isPast():
+			if yyyy - today[0] > 0: return False
+			if yyyy - today[0] == 0:
+				if mm - today[1] > 0:return False
+				if mm - today[1] == 0:
+					if dd - today[2] > 0:return False
+					return True
+				return True
+			return True
+
+
+
+		if not isPast():
+			while list(today[0:3]) != [yyyy,mm,dd]:
+				today = TimeFns.nextDate(today)
+		else:
+#			c = 0
+			while list(today[0:3]) != [yyyy,mm,dd]:
+#				print today
+#				c += 1
+				today = TimeFns.previousDate(today)
+#				if c== 4:break
+
+		return today
+
+
+	@staticmethod
+	def nextDate(time_r, days=1):
 		date_s = mktime(time_r)
-		return localtime(date_s+(24*60*60))[0:3]
+		return localtime(date_s+(days*24*60*60))
+
+	@staticmethod
+	def previousDate(time_r, days=1):
+		date_s = mktime(time_r)
+		return localtime(date_s-(days*24*60*60))
 
 
-	def nextDay(date):
-        	try:
-                	date_sec = ymd2secs( date.split('/') )
-        	except AttributeError:
-                	date_sec = date
-                	pass
-		return "%04d/%02d/%02d" % localtime(date_sec+(24*60*60))[0:3]
 
 

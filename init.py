@@ -5,6 +5,7 @@ import curses
 import curses.ascii
 #import curses.textpad
 from Settings import Settings
+from Monthly import Monthly
 from TimeFuncs import TimeFns
 from time import localtime
 
@@ -43,66 +44,61 @@ class LifeMan:
 		self.screen.addstr(0,2,"a -left, s - down, d-right")
 		
 		self.date = localtime()
-		self.populateMonthGrid(width, height, self.date)
-		self.drawGrid()
+
+		self.monthly = Monthly(self.date)
+		dow_order = Settings.dow_order
+		self.dow_list = map(lambda x: x[0:Settings.dow_abrev_len], dow_order)		
+#		self.dow_list = dow_order		
+
+		self.drawGrid(self.date)
 
 		res = self.getInput()
 		curses.endwin()
 		print res
 
 
-	def populateMonthGrid(self, width, height, date): #offX, offY, date):
-		self.monthly = Monthly(date)
-		dow_order = Settings.dow_order
-		dow_list = map(lambda x: x[0:Settings.dow_abrev_len], dow_order)		
+	def drawGrid(self, date):
 
-		cell_width = width/len(dow_list) 
-#		width_buff =  width%len(dow_list)/2
+		start_dow = self.monthly.days_in_month[0][-3]
+		month_rows = (self.monthly.days/len(self.dow_list)) + (0 if self.monthly.days%len(self.dow_list)==0 else 1)
 
-		cell_height = height/(self.monthly.days_in_month/len(dow_list)) 
-#		height_buff = height%len(dow_list)/2
+		cell_width = self.width/len(self.dow_list) 
+		cell_height = self.height/month_rows 
 
-		dow_count=0
+		dom=1
+		counting = False
 
-		self.grid=[]
-		for y in xrange(height):
-			row = []
-			for x in xrange(width):
-				cell=""
-				if x%cell_width==0:cell='|'
-				if y%cell_height==0:cell='-'
+		cell_y_off = (self.height%(self.monthly.days/len(self.dow_list)))
+		cell_x_off =  (self.width%len(self.dow_list))/2
 
-				if y==0 and x%cell_width==cell_width/2:
-					cell=dow_list[dow_count%len(dow_list)]
-					dow_count += 1
-
-				if x%cell_width==1 and y%cell_height==1:
-					cell='name'
-	
-				row.append(cell)
-			self.grid.append(row)
-
-
-	def drawGrid(self):
-		cell_width = self.width/7
-		cell_height = self.height/(self.monthly.days_in_month/7)
-
-		cell_y = 0
-		for y in xrange(4):
-			cell_x = 0
-			for x in xrange(7):
+		cell_y = cell_y_off
+		for y in xrange(month_rows):
+			cell_x = cell_x_off
+			for x in xrange(len(self.dow_list)):
 				Draw.rectangle(self.screen, cell_y, cell_x, cell_y+cell_height, cell_x + cell_width)
+
+				if not counting and x==start_dow:
+					counting=True
+				
+				if counting:
+					if dom <= self.monthly.days:
+						self.screen.addstr(cell_y+1, cell_x+1, str(dom))
+						dom += 1
+					else:
+						counting = False
+
+
 				cell_x += cell_width
 			cell_y += cell_height
+		
+
+		cell_x = cell_x_off
+		for dow in self.dow_list:
+			self.screen.addstr(cell_y_off, cell_x + (cell_width/2), dow[0:(cell_width/2)])
+			cell_x += cell_width
+
 		self.screen.refresh()
 
-#		for y in xrange(len(self.grid)):
-#			for x in xrange(len(self.grid[0])):
-#				res = self.screen.getch(y,x)
-#				curses.endwin()
-#				print res
-#				self.screen.addstr(y,x, self.grid[y][x])
-#		self.screen.refresh()
 
 
 
@@ -132,31 +128,6 @@ class Daily:
 
 
 
-class Monthly:
-
-        @staticmethod
-        def daysInMonth(month):
-                today = list(localtime())
-                today[1]= month
-                today[2]= 1
-                yyyy,mm,dd  = today[0:3]
-
-                curr_mm = mm
-                max_day = dd
-
-                while curr_mm == mm:
-                        yyyy,mm,dd = TimeFns.nextDayTime(yyyy,mm,dd)
-                        if dd > max_day:max_day=dd
-                        #print yyyy,mm,dd
-                return max_day
-
-
-
-	def __init__(self, ldate):
-		self.month = ldate[1]
-		self.days_in_month = Monthly.daysInMonth(self.month)
-
-
 #class Calendar:
 #
 #	def ():
@@ -164,5 +135,8 @@ class Monthly:
 #		for data in c
 
 
-
-l = LifeMan(int(sys.argv[1])-2, int(sys.argv[2])-2)
+try:
+	LifeMan(int(sys.argv[1])-2, int(sys.argv[2])-2)
+except KeyboardInterrupt:
+	curses.endwin()
+	exit(0)
