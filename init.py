@@ -7,38 +7,19 @@ import curses.ascii
 from Settings import Settings
 from Monthly import Monthly
 from TimeFuncs import TimeFns
-from time import localtime
+from Draw import Draw
 
-class Draw:
-	@staticmethod
-	def rectangle(win, uly, ulx, lry, lrx):
-	    """Draw a rectangle with corners at the provided upper-left
-	    and lower-right coordinates.
-	    """
-	    win.vline(uly+1, ulx, curses.ACS_VLINE, lry - uly - 1)
-	    win.hline(uly, ulx+1, curses.ACS_HLINE, lrx - ulx - 1)
-	    win.hline(lry, ulx+1, curses.ACS_HLINE, lrx - ulx - 1)
-	    win.vline(uly+1, lrx, curses.ACS_VLINE, lry - uly - 1)
-#	    win.addch(uly, ulx, curses.ACS_ULCORNER)
-#	    win.addch(uly, lrx, curses.ACS_URCORNER)
-#	    win.addch(lry, lrx, curses.ACS_LRCORNER)
-#	    win.addch(lry, ulx, curses.ACS_LLCORNER)
-	    win.addch(uly, ulx, '+')
-	    win.addch(uly, lrx, '+')
-	    win.addch(lry, lrx, '+')
-	    win.addch(lry, ulx, '+')
+from time import localtime
 
 
 
 class LifeMan:
 
-	def __init__(self, height, width):
-		self.screen = curses.initscr();
+	def __init__(self, screen, height, width):
+		self.screen = screen
+
 		self.width = width
 		self.height = height
-
-		curses.curs_set(0)
-		curses.noecho()
 
 		self.screen.border();
 		self.screen.addstr(0,2,"a -left, s - down, d-right")
@@ -48,7 +29,6 @@ class LifeMan:
 		self.monthly = Monthly(self.date)
 		dow_order = Settings.dow_order
 		self.dow_list = map(lambda x: x[0:Settings.dow_abrev_len], dow_order)		
-#		self.dow_list = dow_order		
 
 		self.drawGrid(self.date)
 
@@ -72,17 +52,28 @@ class LifeMan:
 		cell_x_off =  (self.width%len(self.dow_list))/2
 
 		cell_y = cell_y_off
+
+		today = localtime()
+
 		for y in xrange(month_rows):
 			cell_x = cell_x_off
 			for x in xrange(len(self.dow_list)):
-				Draw.rectangle(self.screen, cell_y, cell_x, cell_y+cell_height, cell_x + cell_width)
+
+				# Draw boxes (except today) in default color
+				if dom == today[2]:
+					Draw.rectangle(self.screen, cell_y, cell_x, cell_y+cell_height, cell_x + cell_width, Draw.color_today())
+
+#					today_store_x = cell_x
+#					today_store_y = cell_y
+				else:
+					Draw.rectangle(self.screen, cell_y, cell_x, cell_y+cell_height, cell_x + cell_width)
 
 				if not counting and x==start_dow:
 					counting=True
 				
 				if counting:
 					if dom <= self.monthly.days:
-						self.screen.addstr(cell_y+1, cell_x+1, str(dom))
+						self.screen.addstr(cell_y+1, cell_x+1, str(dom), Draw.color_dom())
 						dom += 1
 					else:
 						counting = False
@@ -92,10 +83,17 @@ class LifeMan:
 			cell_y += cell_height
 		
 
+		# Add Days of Week
 		cell_x = cell_x_off
 		for dow in self.dow_list:
-			self.screen.addstr(cell_y_off, cell_x + (cell_width/2), dow[0:(cell_width/2)])
+			self.screen.addstr(cell_y_off, cell_x + (cell_width/2), dow[0:(cell_width/2)], Draw.color_dow())
 			cell_x += cell_width
+
+		# Add Today
+#		Draw.rectangle(self.screen, today_store_y, today_store_x, 
+#					today_store_y+cell_height, today_store_x + cell_width,
+#					Draw.color_today())
+		
 
 		self.screen.refresh()
 
@@ -136,7 +134,7 @@ class Daily:
 
 
 try:
-	LifeMan(int(sys.argv[1])-2, int(sys.argv[2])-2)
+	LifeMan(Draw.screen, int(sys.argv[1])-2, int(sys.argv[2])-2)
 except KeyboardInterrupt:
 	curses.endwin()
 	exit(0)
