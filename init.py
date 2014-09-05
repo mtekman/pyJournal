@@ -13,55 +13,52 @@ from time import localtime
 
 class LifeMan:
 
-	def __init__(self, screen, height, width):
-		self.screen = screen
-		self.width = width; self.height = height
-
+	def reset(self):
 		self.screen.border();
 		self.screen.addstr(self.height+1,2,"a -left, s -down, d -right, w -up ")
-		
+
+
+	def __init__(self, screen, height, width):
+		self.screen = screen
+		self.width = width - 5; 
+		self.height = height -2
+
 		self.date = localtime()
-
 		self.monthly = Monthly(self.date)
-		dow_order = Settings.dow_order
-		self.dow_list = map(lambda x: x[0:Settings.dow_abrev_len], dow_order)		
 
-		self.drawGrid(self.date)
+		self.cell_width = self.width/len(Settings.dow_order) 
+		self.cell_height = self.height/self.monthly.nrows
 
-		res = self.getInput()
-		curses.endwin()
-		print res
+		self.cell_y_off = self.height%(self.monthly.days/len(Settings.dow_order)) 
+		self.cell_x_off = (self.width%len(Settings.dow_order))
+
+		self.monthView()
 
 
-	def drawGrid(self, date):
 
-		start_dow = self.monthly.days_in_month[0][-3]
-		month_rows = (self.monthly.days/len(self.dow_list)) + (0 if self.monthly.days%len(self.dow_list)==0 else 1)
+	def drawMonth(self, date):
+		start_dow = self.monthly.start_dow
+		month_rows = self.monthly.nrows
 
-		self.cell_width = self.width/len(self.dow_list) 
-		self.cell_height = self.height/month_rows 
-
+		today = date
 		dom=1
 		counting = False
-
-		self.cell_y_off = self.height%(self.monthly.days/len(self.dow_list))
-		self.cell_x_off =  (self.width%len(self.dow_list))/2
-
-		today = localtime()
 
 		cell_y = self.cell_y_off
 		for y in xrange(month_rows):
 			cell_x = self.cell_x_off
-			for x in xrange(len(self.dow_list)):
+			for x in xrange(len(Settings.dow_order)):
 
 				# Draw boxes (except today) in default color
 				if dom == today[2]:
-					Draw.rectangle(self.screen, cell_y, cell_x, cell_y+self.cell_height, cell_x + self.cell_width, Draw.color_today())
+					Draw.rectangle(self.screen, cell_y, cell_x, 
+						cell_y+self.cell_height, cell_x + self.cell_width, 
+						Draw.color_today())
 				else:
-					Draw.rectangle(self.screen, cell_y, cell_x, cell_y+self.cell_height, cell_x + self.cell_width)
+					Draw.rectangle(self.screen, cell_y, cell_x, 
+						cell_y+self.cell_height, cell_x + self.cell_width)
 
-				if not counting and x==start_dow:
-					counting=True
+				if not counting and x==start_dow:counting=True
 				
 				if counting:
 					if dom <= self.monthly.days:
@@ -70,22 +67,44 @@ class LifeMan:
 					else:
 						counting = False
 
-
 				cell_x += self.cell_width
 			cell_y += self.cell_height
-		
-
-		# Add Days of Week
-		cell_x = self.cell_x_off
-		for dow in self.dow_list:
-			self.screen.addstr(0, cell_x + (self.cell_width/2), dow[0:(self.cell_width/2)], Draw.color_dow())
-			cell_x += self.cell_width
 
 		self.screen.refresh()
-		res = self.selectDay()
-		curses.endwin()
-		print res
-		exit(0)
+		self.addDaysOfWeek()		# Add Days of Week
+		
+
+
+	def monthView(self):
+		res = self.monthPrompt(self.date)
+
+		# Change month or bring up a daily.
+		while res!='end':
+			if res=="next":
+				ndate = TimeFns.nextMonth(self.date)
+				res = self.monthPrompt(ndate)
+
+			elif res=="prev":
+				ndate = TimeFns.prevMonth(self.date)
+				res = self.monthPrompt(ndate)
+
+
+
+	def monthPrompt(self,date):
+		self.date = date
+		self.monthly = Monthly(date)
+		self.drawMonth(date)
+		return self.selectDay()
+
+
+	def addDaysOfWeek(self):
+		cell_x = self.cell_x_off
+		for dow in Settings.dow_order:
+			self.screen.addstr(0, cell_x + (self.cell_width/2), dow[0:Settings.dow_abrev_len], Draw.color_dow())
+			cell_x += self.cell_width
+
+		self.screen.addstr(0, 0, self.monthly.name, Draw.color_active())
+		self.screen.refresh()
 
 
 	def drawDaySelector(self):
@@ -124,8 +143,16 @@ class LifeMan:
 
 
 	def getDaySelect(self,bx,by):
-		dom = self.screen.getch(by+1, bx+1)
-		return dom, int(dom)
+		dom = self.screen.instr(by+1, bx+1,2)
+
+		if dom:
+			return int(dom)
+
+		
+		if by > self.height - self.cell_height or  bx > self.width - self.cell_width :
+			return "next"
+		if by < self.cell_height or  bx < self.cell_width :
+			return "prev"
 
 
 	def selectDay(self):
@@ -134,7 +161,7 @@ class LifeMan:
 
 
 	def getInput(self):
-		inp=ord('?')
+		inp=ord('v')
 		try:
 			inp = self.screen.getch()
 		except IOError:
@@ -149,25 +176,8 @@ class LifeMan:
 #		for data in c
 
 
-
-#class Reminders:
-#	
-
-class Daily:
-	log_dir = Settings.daily_logdir
-
-	def __init__(self, date):
-		self.date = date  # yyyy, mm, dd (tuple)
-		self.log = Daily.log_dir + '/' + (Settings.daily_logfmt % self.date[0:3]) + '.' + Settings.daily_logext
-
-		self.events = Daily.readDate(self.date)
-		self.daily_log = Daily.parseLog(self.events)
-		self.rem_completed, self.rem_pending = Daily.parseReminders(self.events)
-
-
-
 try:
-	LifeMan(Draw.screen, int(sys.argv[1])-2, int(sys.argv[2])-2)
+	LifeMan(Draw.screen, int(sys.argv[1]), int(sys.argv[2]))
 except KeyboardInterrupt:
 	curses.endwin()
 	exit(0)

@@ -29,6 +29,24 @@ class TimeFns:
 
 
 	@staticmethod
+	def nextMonth(date):
+		month = date[1]+1; year = date[0]
+
+		if month==13:
+			month=1;year += 1
+		return TimeFns.makeDate(year, month, 1)
+
+
+	@staticmethod
+	def prevMonth(date):
+		month = date[1]-1; year = date[0]
+
+		if month==0:
+			month=12;year -= 1
+		return TimeFns.makeDate(year, month, 1)
+			
+
+	@staticmethod
 	def makeDate(yyyy,mm,dd):
 
 		today = localtime()

@@ -14,4 +14,4 @@ class Settings:
 	color_active  = (curses.COLOR_WHITE, curses.COLOR_BLUE)    # Active Selection
 	color_today  =  (curses.COLOR_CYAN, color_defaultbg)      # Today
 	color_dow    =  (curses.COLOR_CYAN, color_defaultbg)      # DOW
-	color_dom    =  (curses.COLOR_RED, curses.COLOR_WHITE)     # DOM
+	color_dom    =  (curses.COLOR_YELLOW, curses.COLOR_BLUE)     # DOM
