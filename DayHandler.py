@@ -8,6 +8,7 @@ from Monthly import Monthly
 from TimeFuncs import TimeFns
 from Draw import Draw
 from Screens import Screens
+from Common import Common
 
 from time import localtime
 
@@ -24,13 +25,14 @@ class DayHandler:
 			last_x = pos_x
 			last_y = pos_y
 
-			inp = lifeman.getInput()
-			if inp == 'a':pos_x -= lifeman.cell_width
-			elif inp == 's':pos_y += lifeman.cell_height
-			elif inp == 'd':pos_x += lifeman.cell_width
-			elif inp == 'w':pos_y -= lifeman.cell_height
-			elif inp == 'q':
-				return pos_x, pos_y
+			fin = Common.moveSelector(lifeman.screen_main, pos_x, pos_y, lifeman.cell_width, lifeman.cell_height)
+
+			if fin == -1:
+				return last_x, last_y
+			if fin == -2:
+				return -2	# Switch Selection Screen!
+			
+			pos_x, pos_y = fin
 
 			if pos_x < lifeman.cell_x_off:	# Left of month
 				pos_x=last_x
@@ -59,6 +61,7 @@ class DayHandler:
 
 			lifeman.screen_main.refresh()
 
+
 	@staticmethod
 	def getDaySelect(lifeman, bx, by):
 		dom = lifeman.screen_main.instr(by+1, bx+1,2)
@@ -80,6 +83,10 @@ class DayHandler:
 	@staticmethod
 	def selectDay(lifeman):
 		bounds = DayHandler.drawDaySelector(lifeman)
+
+		if bounds==-2:
+			return -2	# Switch Selection screen!
+
 		if len(bounds)!=2:return bounds
 
 		bounds_x, bounds_y = bounds

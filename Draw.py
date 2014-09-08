@@ -41,8 +41,8 @@ class Draw:
 	    and lower-right coordinates.
 	    """
 	    if bg!=1:
-		for y in xrange(1,lry-uly):
-			win.addstr(uly+y,ulx, (" "*(lrx-ulx)), curses.color_pair(bg))
+			for y in xrange(1,lry-uly):
+				win.addstr(uly+y,ulx, (" "*(lrx-ulx)), curses.color_pair(bg))
 
 
 	    win.vline(uly+1, ulx, curses.ACS_VLINE, lry - uly - 1, curses.color_pair(pair))

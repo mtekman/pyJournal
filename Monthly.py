@@ -8,19 +8,11 @@ from Settings import Settings
 
 class Monthly:
 
-	month_map = {}
-	month_map[1] = "Jan";
-	month_map[2] = "Feb";
-	month_map[3] = "Mar";
-	month_map[4] = "Apr";
-	month_map[5] = "May";
-	month_map[6] = "Jun";
-	month_map[7] = "Jul";
-	month_map[8] = "Aug";
-	month_map[9] = "Sep";
-	month_map[10] = "Oct";
-	month_map[11] = "Nov";
-	month_map[12] = "Dec";
+	month_map = {
+		1: "January",	2: "February",	3: "March",		4: "April",		
+		5: "May",		6: "June",		7: "July",		8: "August",
+		9: "September",	10: "October",	11: "November",	12: "December"
+	}
 
 
 	@staticmethod
@@ -43,13 +35,20 @@ class Monthly:
 
 	def __init__(self, ldate):
 		self.month = ldate[1]
+		self.year = ldate[0]
+
 		self.name = Monthly.month_map[self.month]
+		if Settings.mon_abrev_len!=0:
+			self.name = self.name[:Settings.mon_abrev_len]
 
 		self.days_in_month = Monthly.daysInMonth(self.month)
 		self.days = len(self.days_in_month)
 
-		self.nrows = ( (self.days/len(Settings.dow_order)) 
-						+ (0 if self.days%len(Settings.dow_order)==0 else 1) )
-
 		self.start_dow = self.days_in_month[0][-3]
+
+#		self.nrows = ( (self.days/len(Settings.dow_order))
+		temp_days = self.days + self.start_dow
+		self.nrows = temp_days / len(Settings.dow_order)
+		self.nrows += (0 if temp_days % self.nrows == 0 else 1)
+
 

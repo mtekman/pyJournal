@@ -15,6 +15,17 @@ from time import localtime
 class MonthHandler:
 
 	@staticmethod
+	def generalOpts(lman):
+		lscreen = lman.screen_options
+
+		lscreen.addstr(1,1, "Title")
+		lscreen.addstr(3,1, "Mod1")
+		lscreen.addstr(4,1, "Mod1")
+		lscreen.addstr(5,1, "Mod1")
+
+		lscreen.refresh()
+
+	@staticmethod
 	def addDaysOfWeek(lman):
 		cell_x = lman.cell_x_off
 		for dow in Settings.dow_order:
