@@ -1,5 +1,8 @@
+import curses
 from Common import Common
 from Draw import Draw
+from DirectoryHandler import DirectoryHandler
+
 
 class OptsGeneral:
 
@@ -24,9 +27,13 @@ class OptsGeneral:
 		self.OptsDraw()
 		res = self.OptsSelector()
 
-		curses.endwin()
-		print res
-		exit(0)
+		if res!=-2:		# Switch back to main otherwise
+			direc = DirectoryHandler(res).dir_tree
+			self.updateOpts( res, direc )	# Key, Contents
+
+#		curses.endwin()
+#		print res
+#		exit(0)
 
 
 	def OptsSelector(self):
@@ -41,14 +48,19 @@ class OptsGeneral:
 				pos_x, pos_y, 0, self.line_gap)
 
 			if res==-2:return res				# Switch window
-			if res==-1:return str_new
+			if res==-1:return str_new			# 
 
 			last_x = pos_x
 			last_y = pos_y
 			pos_x, pos_y = res
 
-			str_old = self.screen.instr(last_y, last_x)
-			str_new = self.screen.instr(pos_y, pos_x).strip()
+			str_old = self.screen.instr(last_y, last_x, self.opts_maxlen)
+			str_new = self.screen.instr(pos_y, pos_x, self.opts_maxlen)
+
+			if len(str_old) < self.opts_maxlen:
+				str_old += ' '*(self.opts_maxlen - len(str_old))
+			if len(str_new) < self.opts_maxlen:
+				str_new += ' '*(self.opts_maxlen - len(str_new))
 
 			self.screen.addstr(last_y, last_x, str_old, Draw.color_default())
 			self.screen.addstr(pos_y, pos_x, str_new, Draw.color_active())

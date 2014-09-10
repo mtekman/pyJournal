@@ -22,3 +22,5 @@ class Settings:
 
 	panel_width_min = 10
 	panel_height_min = 4
+
+	general_notes_dir = '/home/user/MyDocs/Notes/'

@@ -81,7 +81,7 @@ class LifeMan:
 			res = self.monthPrompt(ndate)
 
 			if res == -2:
-				o = OptsGeneral(self.screen_options, self.info_options)
+				OptsGeneral(self.screen_options, self.info_options)
 
 #			curses.endwin()
 #			print res
