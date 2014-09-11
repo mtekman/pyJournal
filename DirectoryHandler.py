@@ -17,9 +17,11 @@ class DirectoryHandler:
 		
 
 	def listNotes(self):
-		current_root = ""
+		keymap = {}
+		
 		for root, direc, files in os.walk(self.type_dir):
-			if curren
+			keymap[root] = [direc, files]
+		return keymap
 
 
 	def getNoteDir(self, name):
