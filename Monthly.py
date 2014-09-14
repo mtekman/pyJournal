@@ -26,7 +26,7 @@ class Monthly:
 
 		while curr_mm == mm:
 			daylist.append(today)
-                	today = TimeFns.nextDate(today)
+			today = TimeFns.nextDate(today)
 			curr_mm = today[1]
 
 		return daylist

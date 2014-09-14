@@ -16,6 +16,15 @@ class DirectoryHandler:
 		self.dir_tree = self.listNotes()
 		
 
+	# Struct Tree ( convert generator into dict):
+	# root -->
+	#		subroot 
+	#			--> subsubroot1 --> files
+	#			--> subsubroot2 --> files
+	#		subroot2 --> files
+	#		file1
+	#		file2
+
 	def listNotes(self):
 		keymap = {}
 		
