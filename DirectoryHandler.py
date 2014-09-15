@@ -5,11 +5,13 @@ class DirectoryHandler:
 	
 	def __init__(self, type):
 
+		type = type.strip()
+
 		if not os.path.exists(Settings.general_notes_dir): 
 			os.mkdir(Settings.general_notes_dir)
 
+		self.type_dir = Settings.general_notes_dir+os.sep+type
 
-		self.type_dir = Settings.general_notes_dir+'/'+type
 		if not os.path.exists(self.type_dir):
 			os.mkdir(self.type_dir)
 

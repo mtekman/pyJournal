@@ -8,12 +8,11 @@ class OptsGeneral:
 
 	def __init__(self, screen, info):
 
-		self.opts = {"ideas":"Ideas", "rems":"Reminders", "lists":"Lists"}
-		self.opts_maxlen = len(
-			reduce(
-				lambda x,y: x if len(x)>len(y) else y, 
-				self.opts.values()
-			))
+		self.opts = {
+			"Ideas":["Ideas",[],[] ], 
+			"Reminders":["Reminders",[],[] ],
+			"Lists":["Lists",[],[] ],
+		}
 
 
 		# General Opts
@@ -24,16 +23,32 @@ class OptsGeneral:
 		self.line_gap = 1
 		self.margin = 3
 
-		self.OptsDraw()
-		res = self.OptsSelector()
+		self.updateOpts( self.opts)	# Key, Contents
 
-		if res!=-2:		# Switch back to main otherwise
-			direc = DirectoryHandler(res).dir_tree
-			self.updateOpts( res, direc )	# Key, Contents
+		user_sel = self.OptsSelector()
+
+		if user_sel!=-2:		# Switch back to main otherwise
+			direc = DirectoryHandler(user_sel).dir_tree
+			self.opts[user_sel] = direc
+			self.updateOpts( direc)	# Key, Contents
 
 #		curses.endwin()
 #		print res
 #		exit(0)
+
+
+
+	def	updateOpts( self, direc):
+
+		self.opts_maxlen = len(
+			reduce(
+				lambda x,y: x if len(x)>len(y) else y, 
+				direc.keys()
+			))
+		
+		self.OptsDraw(direc)
+
+
 
 
 	def OptsSelector(self):
@@ -69,11 +84,32 @@ class OptsGeneral:
 
 
 
-	def OptsDraw(self):
+	# Recursive Fn, prints contents of walk return map
+	def OptsDraw(self, sublist, margin=0):
 		line = self.line_off
 
-		for optkey, val in self.opts.iteritems():
-			self.screen.addstr(line, self.margin, val)
-			line += self.line_gap
+#		sublist = list[:]	# clone list
 
+		while len(sublist)!=0:
+
+			item = sublist.keys()[0]
+			try:
+				root, dnames, fnames = sublist[item]
+			except ValueError:
+				curses.endwin()
+				print sublist
+				exit(-1)				
+
+			if dnames:
+				for d in dnames:
+					self.OptsDraw( sublist[d], margin + 2 )
+					sublist.remove(d)
+
+
+			if fnames:
+				for f in fnames:
+					self.screen.addstr(line, self.margin + margin, f)
+					line += self.line_gap
+
+			sublist.remove(item)
 		self.screen.refresh()
