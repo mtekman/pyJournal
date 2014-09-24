@@ -9,7 +9,8 @@ from TimeFuncs import TimeFns
 from Draw import Draw
 from Screens import Screens
 
-from time import localtime
+#from time import localtime
+from datetime import date
 
 
 class MonthHandler:
@@ -37,15 +38,15 @@ class MonthHandler:
 
 
 	@staticmethod
-	def drawMonth(lifeman, date):
+	def drawMonth(lifeman, d):
 		lifeman.reset(True,False,True)
 		lifeman.updateMonthInfo()
 
 		start_dow = lifeman.monthly.start_dow
 		month_rows = lifeman.monthly.nrows
 
-		today = list(date)
-		dom = 1
+		today = date.today()
+		dom = 99
 		counting = False
 
 		cell_y = lifeman.cell_y_off
@@ -53,8 +54,7 @@ class MonthHandler:
 			cell_x = lifeman.cell_x_off
 			for x in xrange(len(Settings.dow_order)):
 
-				# Draw boxes (except today) in default color
-				if [lifeman.monthly.year, lifeman.monthly.month, dom] == today[0:3]:
+				if (lifeman.monthly.month,dom) == (today.month, today.day):
 						Draw.rectangle(lifeman.screen_main, cell_y, cell_x,
 							cell_y + lifeman.cell_height, cell_x + lifeman.cell_width, 
 							Draw.color_today())
@@ -65,7 +65,9 @@ class MonthHandler:
 #						Draw.color_default())
 
 
-				if not counting and x==start_dow:counting=True
+				if not counting and x==start_dow:
+					counting=True
+					dom=1
 				
 				if counting:
 					if dom <= lifeman.monthly.days:
@@ -73,6 +75,8 @@ class MonthHandler:
 						dom += 1
 					else:
 						counting = False
+
+
 
 				cell_x += lifeman.cell_width
 			cell_y += lifeman.cell_height

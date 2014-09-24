@@ -16,7 +16,7 @@ from Common import Common
 from OptsGeneralHandler import OptsGeneral
 
 
-from time import localtime
+from datetime import date
 
 
 class LifeMan:
@@ -54,7 +54,7 @@ class LifeMan:
 
 
 	def __init__(self, panels):
-		self.date = localtime()
+		self.date = date.today()
 		self.monthly = Monthly(self.date)
 
 		self.setPanels()
