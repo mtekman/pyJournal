@@ -3,15 +3,16 @@ from Common import Common
 from Draw import Draw
 from DirectoryHandler import DirectoryHandler
 
+from Settings import Settings
 
 class OptsGeneral:
 
 	def __init__(self, screen, info):
 
 		self.opts = {
-			"Ideas":["Ideas",[],[] ], 
-			"Reminders":["Reminders",[],[] ],
-			"Lists":["Lists",[],[] ],
+			"Ideas":[[],[] ], 
+			"Reminders":[[],[] ],
+			"Lists":[[],[] ],
 		}
 
 
@@ -23,7 +24,11 @@ class OptsGeneral:
 		self.line_gap = 1
 		self.margin = 3
 
+		direc = DirectoryHandler("").dir_tree
 		self.updateOpts( self.opts)	# Key, Contents
+		# The idea here is to expand directories when neccesary and not before
+
+#		self.updateOpts( direc)	# Key, Contents
 
 		user_sel = self.OptsSelector()
 
@@ -83,27 +88,33 @@ class OptsGeneral:
 			self.screen.refresh()
 
 
+	# Two fns defined:
+
+#	def OptsListUpdate()
+#	def OptsListDrawCurrent()
+#	'''Called imediately after an OptsListUpdate'''
+
+
 
 	# Recursive Fn, prints contents of walk return map
-	def OptsDraw(self, sublist, margin=0):
-		line = self.line_off
-
-#		sublist = list[:]	# clone list
+	# Returns line position
+	def OptsDraw(self, sublist, margin=0, line=-1):
+		if line==-1:line = self.line_off
 
 		while len(sublist)!=0:
 
-			item = sublist.keys()[0]
-			try:
-				root, dnames, fnames = sublist[item]
-			except ValueError:
-				curses.endwin()
-				print sublist
-				exit(-1)				
+			item = sublist.keys()[0]	# Grab first
+			root = item
+
+			dnames, fnames = sublist[root]
+			self.screen.addstr(line, self.margin + margin, root)
+			line += self.line_gap
 
 			if dnames:
 				for d in dnames:
-					self.OptsDraw( sublist[d], margin + 2 )
-					sublist.remove(d)
+					line +=1
+					self.OptsDraw( sublist[d], margin + 2, line)
+					sublist.pop(d)
 
 
 			if fnames:
@@ -111,5 +122,5 @@ class OptsGeneral:
 					self.screen.addstr(line, self.margin + margin, f)
 					line += self.line_gap
 
-			sublist.remove(item)
+			sublist.pop(item)
 		self.screen.refresh()

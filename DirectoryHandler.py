@@ -31,6 +31,7 @@ class DirectoryHandler:
 		keymap = {}
 		
 		for root, direc, files in os.walk(self.type_dir):
+			root = root.split(Settings.general_notes_dir)[-1].strip()
 			keymap[root] = [direc, files]
 		return keymap
 
@@ -64,3 +65,6 @@ class DirectoryHandler:
 		f = open(fnote,'r')
 		return f.readlines()
 
+
+#d = DirectoryHandler('/Ideas')
+#print d.dir_tree

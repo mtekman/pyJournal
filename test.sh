@@ -1,1 +1,1 @@
-python2 init.py $(stty size)
+python init.py $(stty size)
