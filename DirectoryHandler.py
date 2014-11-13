@@ -54,7 +54,6 @@ class DirectoryHandler:
 		f.close()
 
 
-
 	def readNote(self, name, note):
 		dir = self.getNoteDir(name)
 		fnote = dir + '/' + note
@@ -66,5 +65,5 @@ class DirectoryHandler:
 		return f.readlines()
 
 
-#d = DirectoryHandler('/Ideas')
+#d = DirectoryHandler(sys.argv[1])
 #print d.dir_tree
