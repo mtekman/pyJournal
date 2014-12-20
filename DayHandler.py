@@ -66,8 +66,6 @@ class DayHandler:
 	def getDaySelect(lifeman, bx, by):
 		dom = lifeman.screen_main.instr(by+1, bx+1,2)
 		curses.endwin()
-		print dom
-		exit(0)
 
 		try:
 			return int(dom)

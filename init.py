@@ -93,7 +93,9 @@ class LifeMan:
 		self.monthly = Monthly(date)
 
 		MonthHandler.drawMonth(self, date)
-		return DayHandler.selectDay(self)
+		pp = DayHandler.selectDay(self)
+		print pp
+		return pp
 
 
 	def updateMonthInfo(self):
